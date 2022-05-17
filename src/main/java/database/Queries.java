@@ -1,13 +1,11 @@
 package database;
 
 import model.Course;
-import model.Grade;
+import model.Examination;
 import model.Student;
 import utilities.LoggingUtilities;
 
 import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -46,13 +44,13 @@ public class Queries {
         return courses;
     }
 
-    public static List<Grade> getStudentGradesAtCourse(Student student, Course course) {
-        List<Grade> gradesList = new LinkedList<>();
+    public static List<Examination> getStudentGradesAtCourse(Student student, Course course) {
+        List<Examination> gradesList = new LinkedList<>();
         String query = "SELECT * FROM Grades WHERE student_id=? AND  course_id=?";
         try (Connection con = DriverManager.getConnection(CONNECTION_STRING, username, password); Statement statement = con.createStatement()) {
             ResultSet resultSet = statement.executeQuery(query);
             while (resultSet.next()) {
-                Grade grade = new Grade(student, course, resultSet.getDouble(3), resultSet.getDate(4), resultSet.getBoolean(5));
+                Examination grade = new Examination(student, course, resultSet.getDouble(3), resultSet.getDate(4), resultSet.getBoolean(5));
                 gradesList.add(grade);
             }
         } catch (Exception e) {
@@ -100,7 +98,7 @@ public class Queries {
         }
     }
 
-    public static void insertGrade(Grade grade) {
+    public static void insertGrade(Examination grade) {
         String query = "INSERT INTO Grades (grade, date, hasPaidTax, student_id, course_id) VALUES (?1,?2,?3,?4,?5)";
         try (Connection con = DriverManager.getConnection(CONNECTION_STRING, username, password); PreparedStatement preparedStatement = con.prepareStatement(query)) {
             preparedStatement.setDouble(1, grade.getGrade());

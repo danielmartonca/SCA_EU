@@ -2,7 +2,7 @@ package actions;
 
 import applet.Applet;
 import database.Queries;
-import model.Grade;
+import model.Examination;
 import model.Student;
 
 import java.util.LinkedList;
@@ -10,7 +10,7 @@ import java.util.List;
 
 public class TerminalActions {
     static Student student;
-    static List<Grade> cardGrades;
+    static List<Examination> cardGrades;
 
     public static void receiveGradesFromCard() {
         cardGrades = Applet.receiveCardGrades();
@@ -19,7 +19,7 @@ public class TerminalActions {
     public static void updateCardGradesFromDatabase() {
         student = new Student(StudentActions.studentId);
 
-        List<Grade> newGrades = new LinkedList<>();
+        List<Examination> newGrades = new LinkedList<>();
         boolean hasUpdated = false;
         var courses = Queries.getAllCourses();
         for (var course : courses) {

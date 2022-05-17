@@ -3,12 +3,13 @@ package actions;
 import applet.Applet;
 import database.Queries;
 import model.Course;
-import model.Grade;
+import model.Examination;
 import model.Student;
 import utilities.UserType;
 import utilities.LoggingUtilities;
 import utilities.TextColor;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
@@ -18,7 +19,7 @@ public class TeacherActions {
     private static List<Course> availableCourses;
     private static Course course;
     private static Student student;
-    private static List<Grade> studentGradesAtCourse;
+    private static List<Examination> studentGradesAtCourse;
     private static double newGrade;
 
     private static void printAvailableCourses() {
@@ -30,7 +31,7 @@ public class TeacherActions {
     }
 
     private static void insertGradeInDatabase(double gradeValue) {
-        Grade grade = new Grade(student, course, gradeValue);
+        Examination grade = new Examination(student, course, gradeValue);
         Queries.insertGrade(grade);
         studentGradesAtCourse.add(grade);
         if (gradeValue == 11.0) {
@@ -83,7 +84,7 @@ public class TeacherActions {
         } while (!isOk);
 
         int studentId = StudentActions.studentId;
-        Applet.sendGrade(course, newGrade);
+        Applet.sendGrade(newGrade, course.getId(), new Date());//TODO
 
         student = Queries.findStudentById(studentId);
         if (student == null) {
@@ -136,7 +137,7 @@ public class TeacherActions {
 
         //if the student has NOT paid the tax
         LoggingUtilities.printUserMessage(UserType.TEACHER, "Student has not payed the tax. Inserting error code 11 as grade in database and sending it to applet.");
-        Applet.sendErrorCodeForTaxNotPaid(course, newGrade);
+        Applet.sendErrorCodeForTaxNotPaid(newGrade, course.getId(), new Date());
         insertGradeInDatabase(11.0);
     }
 }

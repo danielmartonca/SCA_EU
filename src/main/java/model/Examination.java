@@ -11,14 +11,14 @@ import java.util.Date;
 @AllArgsConstructor
 @EqualsAndHashCode
 @Data
-public class Grade {
+public class Examination {
     private Student student;
     private Course course;
     private Double grade;
     private Date date;
     private boolean hasPaidTax;
 
-    public Grade(Student student, Course course, Double grade) {
+    public Examination(Student student, Course course, Double grade) {
         this.student = student;
         this.course = course;
         this.grade = grade;
