@@ -1,13 +1,12 @@
 import actions.StudentActions;
 import actions.TeacherActions;
 import actions.TerminalActions;
+import applet.Applet;
 
 import java.io.IOException;
 
 public class CLI {
 
-    static String crefFilePath = "F:\\Info\\FACULTATE\\ANUL_3\\SEM_2\\SCA\\SETUP\\Java Card Development Kit Simulator\\bin\\cref.bat";
-    static Process process;
 
     public static void afterExam() {
         StudentActions.inputPin();
@@ -25,12 +24,15 @@ public class CLI {
     }
 
     public static void main(String[] args) throws IOException {
-        try {
-            process = Runtime.getRuntime().exec(crefFilePath);
-            afterExam();
-            afterSession();
-        } finally {
-            process.destroy();
-        }
+        Applet.openApplet();
+        Applet.powerUp();
+        Applet.createWalletApplet();
+        Applet.runCapWallet();
+        Applet.selectWallet();
+
+        afterExam();
+        afterSession();
+
+        Applet.powerDown();
     }
 }

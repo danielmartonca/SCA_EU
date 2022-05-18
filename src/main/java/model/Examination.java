@@ -14,11 +14,11 @@ import java.util.Date;
 public class Examination {
     private Student student;
     private Course course;
-    private Double grade;
+    private Integer grade;
     private Date date;
     private boolean hasPaidTax;
 
-    public Examination(Student student, Course course, Double grade) {
+    public Examination(Student student, Course course, Integer grade) {
         this.student = student;
         this.course = course;
         this.grade = grade;

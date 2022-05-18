@@ -20,7 +20,7 @@ public class TeacherActions {
     private static Course course;
     private static Student student;
     private static List<Examination> studentGradesAtCourse;
-    private static double newGrade;
+    private static Integer newGrade;
 
     private static void printAvailableCourses() {
         availableCourses = Queries.getAllCourses();
@@ -30,11 +30,11 @@ public class TeacherActions {
         System.out.println('\n');
     }
 
-    private static void insertGradeInDatabase(double gradeValue) {
+    private static void insertGradeInDatabase(Integer gradeValue) {
         Examination grade = new Examination(student, course, gradeValue);
         Queries.insertGrade(grade);
         studentGradesAtCourse.add(grade);
-        if (gradeValue == 11.0) {
+        if (gradeValue == 11) {
             LoggingUtilities.printUserMessage(UserType.TEACHER, "Setting hasPaidTax to '" + false + "' for course '" + course.getName() + "' in database.");
             Queries.setHasPaidTax(false, course);
         }
@@ -73,7 +73,7 @@ public class TeacherActions {
             LoggingUtilities.printUserMessage(UserType.TEACHER, "Insert student grade: ");
             input = scanner.nextLine().trim();
             try {
-                newGrade = Double.parseDouble(input);
+                newGrade = Integer.parseInt(input);
                 if (newGrade < 0 || newGrade > 10)
                     throw new NumberFormatException();
                 isOk = true;
@@ -84,7 +84,7 @@ public class TeacherActions {
         } while (!isOk);
 
         int studentId = StudentActions.studentId;
-        Applet.sendGrade(newGrade, course.getId(), new Date());//TODO
+        Applet.sendGrade( newGrade, course.getId(), new Date());//TODO
 
         student = Queries.findStudentById(studentId);
         if (student == null) {
@@ -111,7 +111,7 @@ public class TeacherActions {
         boolean hasPassed = true;
         int counter = 0;
         for (var grade : studentGradesAtCourse) {
-            if (grade.getGrade() < 5.0)
+            if (grade.getGrade() < 5)
                 counter++;
             if (counter >= 2) {
                 LoggingUtilities.printUserMessage(UserType.TEACHER, "Student has more than two grades less than 5.");
@@ -137,7 +137,7 @@ public class TeacherActions {
 
         //if the student has NOT paid the tax
         LoggingUtilities.printUserMessage(UserType.TEACHER, "Student has not payed the tax. Inserting error code 11 as grade in database and sending it to applet.");
-        Applet.sendErrorCodeForTaxNotPaid(newGrade, course.getId(), new Date());
-        insertGradeInDatabase(11.0);
+        Applet.sendGrade( 11, course.getId(), new Date());
+        insertGradeInDatabase(11);
     }
 }
