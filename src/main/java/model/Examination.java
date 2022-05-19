@@ -25,4 +25,15 @@ public class Examination {
         this.date = new Date();
         this.hasPaidTax = false;
     }
+
+    @Override
+    public String toString() {
+        return "\nExamination {" +
+                "\nstudent_id=" + student.getId() +
+                "\ncourse_id=" + course.getId() +
+                "\ngrade=" + grade +
+                "\ndate=" + date +
+                "\nhasPaidTax=" + hasPaidTax +
+                "\n}";
+    }
 }

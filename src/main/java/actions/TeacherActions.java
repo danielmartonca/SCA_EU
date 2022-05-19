@@ -35,10 +35,10 @@ public class TeacherActions {
         Queries.insertGrade(grade);
         studentGradesAtCourse.add(grade);
         if (gradeValue == 11) {
-            LoggingUtilities.printUserMessage(UserType.TEACHER, "Setting hasPaidTax to '" + false + "' for course '" + course.getName() + "' in database.");
+            LoggingUtilities.printUserMessage(UserType.TEACHER, "Setting hasPaidTax to '" + false + "' for course '" + course.getName() + "' in database.\n");
             Queries.setHasPaidTax(false, course);
         }
-        LoggingUtilities.printUserMessage(UserType.TEACHER, "Inserted new grade '" + gradeValue + "' for course '" + course.getName() + "' in database.");
+        LoggingUtilities.printUserMessage(UserType.TEACHER, "Inserted new grade '" + gradeValue + "' for course '" + course.getName() + "' in database.\n");
     }
 
     public static void chooseCourse() {
@@ -74,7 +74,7 @@ public class TeacherActions {
             input = scanner.nextLine().trim();
             try {
                 newGrade = Integer.parseInt(input);
-                if (newGrade < 0 || newGrade > 10)
+                if (newGrade <= 0 || newGrade > 10)
                     throw new NumberFormatException();
                 isOk = true;
             } catch (NumberFormatException e) {
@@ -83,27 +83,26 @@ public class TeacherActions {
             }
         } while (!isOk);
 
+        LoggingUtilities.printUserMessage(UserType.TEACHER, "Sending to applet grade '" + newGrade + "' for course " + course + '\n');
         int studentId = StudentActions.studentId;
-        Applet.sendGrade( newGrade, course.getId(), new Date());//TODO
+        Applet.sendGrade(newGrade, course.getId(), new Date());
 
         student = Queries.findStudentById(studentId);
         if (student == null) {
             LoggingUtilities.printError("Student wasn't found in the database.");
             System.exit(-1);
         }
-
-        LoggingUtilities.printUserMessage(UserType.TEACHER, "Sending to applet grade '" + newGrade + "' for course " + course + '\n');
-        LoggingUtilities.printUserMessage(UserType.TEACHER, "Applet returned studentId: '" + studentId + "'\n");
+//        LoggingUtilities.printUserMessage(UserType.TEACHER, "Applet returned studentId: '" + studentId + "'\n");
     }
 
     public static void insertStudentGradesAtCourse() {
         //get grades
         studentGradesAtCourse = Queries.getStudentGradesAtCourse(student, course);
-
+        LoggingUtilities.printUserMessage(UserType.TEACHER, "Got students grades:\n" + studentGradesAtCourse + '\n');
         //if student has less than two grades
         if (studentGradesAtCourse.size() < 2) {
+            LoggingUtilities.printUserMessage(UserType.TEACHER, "Student has less than two grades.\n");
             insertGradeInDatabase(newGrade);
-            LoggingUtilities.printUserMessage(UserType.TEACHER, "Student has less than two grades.");
             return;
         }
 
@@ -114,14 +113,14 @@ public class TeacherActions {
             if (grade.getGrade() < 5)
                 counter++;
             if (counter >= 2) {
-                LoggingUtilities.printUserMessage(UserType.TEACHER, "Student has more than two grades less than 5.");
+                LoggingUtilities.printUserMessage(UserType.TEACHER, "Student has more than two grades less than 5.\n");
                 hasPassed = false;
                 break;
             }
         }
 
         if (hasPassed) {
-            LoggingUtilities.printUserMessage(UserType.TEACHER, "Student has less than two grades less than 5.");
+            LoggingUtilities.printUserMessage(UserType.TEACHER, "Student has less than two grades less than 5.\n");
             insertGradeInDatabase(newGrade);
             return;
         }
@@ -131,13 +130,14 @@ public class TeacherActions {
             if (grade.isHasPaidTax()) {
                 LoggingUtilities.printUserMessage(UserType.TEACHER, "Student has paid the tax.");
                 insertGradeInDatabase(newGrade);
+                Queries.setHasPaidTax(true, course);
                 return;
             }
 
 
         //if the student has NOT paid the tax
-        LoggingUtilities.printUserMessage(UserType.TEACHER, "Student has not payed the tax. Inserting error code 11 as grade in database and sending it to applet.");
-        Applet.sendGrade( 11, course.getId(), new Date());
+        LoggingUtilities.printUserMessage(UserType.TEACHER, "Student has not payed the tax. Inserting error code 11 as grade in database and sending it to applet.\n");
+        Applet.sendGrade(11, course.getId(), new Date());
         insertGradeInDatabase(11);
     }
 }

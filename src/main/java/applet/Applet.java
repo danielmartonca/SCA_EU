@@ -1,31 +1,32 @@
 package applet;
 
+import com.sun.javacard.apduio.Apdu;
+import com.sun.javacard.apduio.CadClientInterface;
+import com.sun.javacard.apduio.CadDevice;
 import com.sun.javacard.jpcsclite.APDU;
 import database.Queries;
 import model.Examination;
+import utilities.HexUtilities;
+import utilities.LoggingUtilities;
 
 import java.io.*;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
-
-import com.sun.javacard.apduio.*;
-import utilities.LoggingUtilities;
-import utilities.HexUtilities;
+import java.util.stream.Collectors;
 
 public class Applet {
     static CadClientInterface cad;
     static String crefFilePath = "F:\\Info\\FACULTATE\\ANUL_3\\SEM_2\\SCA\\SETUP\\Java Card Development Kit Simulator\\bin\\cref.bat";
     static Process process;
 
-    private static byte[] sendApdu(String commandName, byte[] bytes) {
+    private static byte[] sendApdu(byte[] bytes) {
         try {
             Apdu apdu = createApduCommand(bytes);
-            LoggingUtilities.printApduMessage(commandName, apdu);
             cad.exchangeApdu(apdu);
 
             byte[] sw1sw2 = apdu.getSw1Sw2();
@@ -75,7 +76,8 @@ public class Applet {
     public static void createWalletApplet() {
         String command = "0x80 0xB8 0x00 0x00 0x14 0x0a 0xa0 0x00 0x00 0x00 0x62 0x03 0x01 0x0c 0x06 0x01 0x08 0x00 0x00 0x05 0x01 0x02 0x03 0x04 0x05 0x7F;";
         List<Byte> bytesList = HexUtilities.convertStringToByteList(command);
-        sendApdu("CREATE WALLET APPLET", HexUtilities.getByteArrayFromList(bytesList));
+        LoggingUtilities.printApduMessage("CREATE WALLET APPLET", command);
+        sendApdu(HexUtilities.getByteArrayFromList(bytesList));
     }
 
     private static Apdu createApduCommand(byte[] bytes) {
@@ -110,7 +112,7 @@ public class Applet {
             String line;
             while ((line = reader.readLine()) != null) if (line.startsWith("0")) {
                 List<Byte> byteList = HexUtilities.convertStringToByteList(line);
-                sendApdu("CAP", HexUtilities.getByteArrayFromList(byteList));
+                sendApdu(HexUtilities.getByteArrayFromList(byteList));
             }
 
         } catch (IOException e) {
@@ -122,7 +124,8 @@ public class Applet {
     public static void selectWallet() {
         String command = "0x00 0xA4 0x04 0x00 0x0a 0xa0 0x00 0x00 0x00 0x62 0x03 0x01 0x0c 0x06 0x01 0x7F";
         List<Byte> byteList = HexUtilities.convertStringToByteList(command);
-        sendApdu("SELECT WALLET", HexUtilities.getByteArrayFromList(byteList));
+        LoggingUtilities.printApduMessage("SELECT WALLET", command);
+        sendApdu(HexUtilities.getByteArrayFromList(byteList));
     }
 
 
@@ -138,10 +141,11 @@ public class Applet {
         sb.append(" 0X7F");
 
         byte[] bytes = HexUtilities.getByteArrayFromList(HexUtilities.convertStringToByteList(sb.toString()));
-        byte[] returnedBytes = sendApdu("PIN", bytes);
+//        byte[] returnedBytes = sendApdu("PIN", bytes);
         //APDU|CLA: 80, INS: 30, P1: 00, P2: 00, Lc: 01, 01, Le: 04, 00, 0e, 07, 16, SW1: 90, SW2: 00
         //TODO transform student id from byte[]
-        return null;
+        if (pinString.equals("1234")) return 2;
+        else return null;
     }
 
     private static Examination getGrade(int courseId) {
@@ -149,7 +153,8 @@ public class Applet {
         String sb = "0x80 0x30 0x00 0x00 0x01 " + Integer.toHexString(courseId) + " 0X7F";
 
         byte[] bytes = HexUtilities.getByteArrayFromList(HexUtilities.convertStringToByteList(sb));
-        byte[] returnedBytes = sendApdu("GET GRADE", bytes);
+        LoggingUtilities.printApduMessage("GET GRADE", sb);
+//        byte[] returnedBytes = sendApdu(bytes);
         //APDU|CLA: 80, INS: 30, P1: 00, P2: 00, Lc: 01, 01, Le: 04, 00, 0e, 07, 16, SW1: 90, SW2: 00
         //TODO transform response
         return new Examination();
@@ -158,18 +163,30 @@ public class Applet {
     public static void sendGrade(Integer grade, int courseId, Date date) {
         //0x80 0x40 0x00 0x00 0x05 0x01 0x09 0x01 0x01 0x01 0x7F;
         StringBuilder sb = new StringBuilder("0x80 0x40 0x00 0x00 0x05");
-        sb.append(" ").append(Integer.toHexString(courseId));
-        sb.append(" ").append(Integer.toHexString(grade));
+        sb.append(" ").append("0x0").append(Integer.toHexString(courseId));
+        sb.append(" ").append("0x0").append(Integer.toHexString(grade));
         DateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
         String dateAsString = dateFormat.format(date);
         var words = dateAsString.split("-");
-        sb.append(" ").append(words[3]); //day
-        sb.append(" ").append(words[2]); //month
-        sb.append(" ").append(words[1]); //year
-        sb.append(" 0X7F");
+        var listOfWords = Arrays.stream(words).map(Integer::parseInt).map(Integer::toHexString).toList();
+        List<String> updatedWords = new LinkedList<>();
+        listOfWords.forEach(word -> {
+            var hex = Integer.toHexString(Integer.parseInt(word));
+            if (hex.length() == 1) {
+                hex = "0" + hex;
+            }
+
+            updatedWords.add(hex);
+        });
+        sb.append(" ").append("0x").append(updatedWords.get(2)); //day
+        sb.append(" ").append("0x").append(updatedWords.get(1)); //month
+        sb.append(" ").append("0x").append(updatedWords.get(0)); //year
+        sb.append(" 0x7F");
+
+        LoggingUtilities.printApduMessage("SEND GRADE", sb.toString());
 
         byte[] bytes = HexUtilities.getByteArrayFromList(HexUtilities.convertStringToByteList(sb.toString()));
-        byte[] returnedBytes = sendApdu("SEND GRADE", bytes);
+//        byte[] returnedBytes = sendApdu(bytes);
         //APDU|CLA: 80, INS: 30, P1: 00, P2: 00, Lc: 01, 01, Le: 04, 00, 0e, 07, 16, SW1: 90, SW2: 00
         //TODO transform response
     }
@@ -183,7 +200,6 @@ public class Applet {
         }
         return cardExaminations;
     }
-
 
     public static void sendGradesToCard(List<Examination> newGrades) {
         for (var examination : newGrades) {

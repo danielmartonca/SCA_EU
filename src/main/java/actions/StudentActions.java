@@ -30,7 +30,11 @@ public class StudentActions {
     public static void checkIfAuthorised() {
         try {
             studentId = Applet.sendPin(input);
-            if (studentId == null) System.exit(-1);
+            if (studentId == null) {
+                LoggingUtilities.printError("Invalid pin.");
+                inputPin();
+                checkIfAuthorised();
+            }
         } catch (Exception e) {
             LoggingUtilities.printError("[Authorization] Exception while sending pin to applet: '" + e.getMessage() + "'");
             System.exit(-1);

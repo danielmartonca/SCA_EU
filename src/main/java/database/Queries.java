@@ -39,7 +39,7 @@ public class Queries {
                 courses.add(course);
             }
         } catch (Exception e) {
-            System.err.println("[SQL] Exception occurred while inserting new course in database.");
+            System.err.println("[SQL] Exception occurred while getting cases from the database: " + e.getMessage());
         }
         return courses;
     }
@@ -47,14 +47,18 @@ public class Queries {
     public static List<Examination> getStudentGradesAtCourse(Student student, Course course) {
         List<Examination> gradesList = new LinkedList<>();
         String query = "SELECT * FROM Grades WHERE student_id=? AND  course_id=?";
-        try (Connection con = DriverManager.getConnection(CONNECTION_STRING, username, password); Statement statement = con.createStatement()) {
-            ResultSet resultSet = statement.executeQuery(query);
+        try (Connection con = DriverManager.getConnection(CONNECTION_STRING, username, password); PreparedStatement statement = con.prepareStatement(query)) {
+            statement.setInt(1, student.getId());
+            statement.setInt(2, course.getId());
+
+            ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                Examination grade = new Examination(student, course, resultSet.getDouble(3), resultSet.getDate(4), resultSet.getBoolean(5));
+                Examination grade = new Examination(student, course, resultSet.getInt(1), new java.util.Date(resultSet.getDate(2).getTime()), resultSet.getBoolean(3));
                 gradesList.add(grade);
             }
         } catch (Exception e) {
-            System.err.println("[SQL] Exception occurred while inserting new course in database.");
+            LoggingUtilities.printError("[SQL] Exception occurred at getStudentGradesAtCourse.");
+            LoggingUtilities.printError("[SQL] Exception is: " + e.getMessage());
         }
         return gradesList;
     }
@@ -69,39 +73,15 @@ public class Queries {
             student.setId(studentId);
             return student;
         } catch (Exception e) {
-            LoggingUtilities.printError("[SQL] Exception occurred while inserting new course in database.");
+            LoggingUtilities.printError("[SQL] Exception occurred at findStudentById.");
         }
         return null;
     }
 
-    private static int findCourseIdByName(Course course) {
-        String query = "SELECT 1 FROM Courses c WHERE c.Name=?";
-        try (Connection con = DriverManager.getConnection(CONNECTION_STRING, username, password); PreparedStatement preparedStatement = con.prepareStatement(query)) {
-            preparedStatement.setString(1, course.getName());
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (!resultSet.isBeforeFirst()) return -1;
-            return resultSet.getInt("id");
-        } catch (Exception e) {
-            LoggingUtilities.printError("[SQL] Exception occurred while inserting new course in database.");
-        }
-        return -1;
-    }
-
-    public static void insertCourse(Course course) {
-        String query = "INSERT INTO Courses (code, name) VALUES (?1,?2)";
-        try (Connection con = DriverManager.getConnection(CONNECTION_STRING, username, password); PreparedStatement preparedStatement = con.prepareStatement(query)) {
-            preparedStatement.setString(1, course.getCode().toString());
-            preparedStatement.setString(2, course.getName());
-            preparedStatement.execute();
-        } catch (Exception e) {
-            System.err.println("[SQL] Exception occurred while inserting new course in database.");
-        }
-    }
-
     public static void insertGrade(Examination grade) {
-        String query = "INSERT INTO Grades (grade, date, hasPaidTax, student_id, course_id) VALUES (?1,?2,?3,?4,?5)";
+        String query = "INSERT INTO Grades (grade, date, hasPaidTax, student_id, course_id) VALUES (?,?,?,?,?)";
         try (Connection con = DriverManager.getConnection(CONNECTION_STRING, username, password); PreparedStatement preparedStatement = con.prepareStatement(query)) {
-            preparedStatement.setDouble(1, grade.getGrade());
+            preparedStatement.setInt(1, grade.getGrade());
 
             preparedStatement.setDate(2, new java.sql.Date(grade.getDate().getTime()));
 
@@ -112,7 +92,6 @@ public class Queries {
 
             int courseId = grade.getCourse().getId();
             preparedStatement.setInt(5, courseId);
-
             preparedStatement.execute();
         } catch (Exception e) {
             LoggingUtilities.printError("[SQL] Exception occurred while inserting new grade in database.");
@@ -128,7 +107,7 @@ public class Queries {
             preparedStatement.setInt(2, course.getId());
             preparedStatement.execute();
         } catch (Exception e) {
-            LoggingUtilities.printError("[SQL] Exception occurred while inserting new course in database.");
+            LoggingUtilities.printError("[SQL] Exception occurred at setHasPaidTax.");
             LoggingUtilities.printError("[SQL] Exception is: " + e.getMessage());
         }
     }

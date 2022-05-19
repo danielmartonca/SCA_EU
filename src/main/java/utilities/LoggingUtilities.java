@@ -1,6 +1,5 @@
 package utilities;
 
-import com.sun.javacard.apduio.Apdu;
 
 public class LoggingUtilities {
     public static String colorString(String string, TextColor color) {
@@ -15,10 +14,10 @@ public class LoggingUtilities {
         System.out.print(colorString('[' + type.name() + "] " + string, type == UserType.STUDENT ? TextColor.CYAN : TextColor.BLUE));
     }
 
-    public static void printApduMessage(String message, Apdu apdu) {
+    public static void printApduMessage(String message, String apduCommand) {
         String prefix = "[APDU] ";
         System.out.println(colorString(prefix + message, TextColor.PURPLE));
-        System.out.println(colorString(prefix + apdu + '\n', TextColor.PURPLE));
+        System.out.println(colorString(prefix + apduCommand + '\n', TextColor.PURPLE));
     }
 
     public static void printApduError(byte[] sw1sw2) {
