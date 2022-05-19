@@ -15,6 +15,20 @@ public class Queries {
     private static final String username = "sa";
     private static final String password = "LCy!@e^jr#G{<9<B";
 
+    public static Course getCourseById(int id) {
+        String query = "SELECT * FROM Courses c WHERE c.id=?";
+        try (Connection con = DriverManager.getConnection(CONNECTION_STRING, username, password); PreparedStatement preparedStatement = con.prepareStatement(query)) {
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (!resultSet.isBeforeFirst()) return null;
+            resultSet.next();
+            return new Course(resultSet.getInt(1), UUID.fromString(resultSet.getString(2)), resultSet.getString(3));
+        } catch (Exception e) {
+            LoggingUtilities.printError("[SQL] Exception occurred while extracting course by name from db.");
+        }
+        return null;
+    }
+
     public static Course getCourseByName(String name) {
         String query = "SELECT * FROM Courses c WHERE c.Name=?";
         try (Connection con = DriverManager.getConnection(CONNECTION_STRING, username, password); PreparedStatement preparedStatement = con.prepareStatement(query)) {

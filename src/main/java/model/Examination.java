@@ -26,6 +26,14 @@ public class Examination {
         this.hasPaidTax = false;
     }
 
+    public Examination(Student student, Course course, Date date, Integer grade) {
+        this.student = student;
+        this.course = course;
+        this.grade = grade;
+        this.date = new Date();
+        this.hasPaidTax = false;
+    }
+
     @Override
     public String toString() {
         return "\nExamination {" +

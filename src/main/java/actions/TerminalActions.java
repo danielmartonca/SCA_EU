@@ -13,11 +13,11 @@ public class TerminalActions {
     static List<Examination> cardGrades;
 
     public static void receiveGradesFromCard() {
-        cardGrades = Applet.receiveCardGrades();
+        student = new Student(StudentActions.studentId);
+        cardGrades = Applet.receiveCardGrades(student.getId());
     }
 
     public static void updateCardGradesFromDatabase() {
-        student = new Student(StudentActions.studentId);
 
         List<Examination> newGrades = new LinkedList<>();
         boolean hasUpdated = false;

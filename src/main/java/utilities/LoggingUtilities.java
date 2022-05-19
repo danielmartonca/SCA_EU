@@ -24,6 +24,10 @@ public class LoggingUtilities {
         String prefix = "[APDU ERROR] ";
         System.out.println(colorString(prefix + "SW1:" + sw1sw2[0] + "  SW2:" + sw1sw2[1], TextColor.RED));
     }
+    public static void printApduError(byte sw1,byte sw2) {
+        String prefix = "[APDU ERROR] ";
+        System.out.println(colorString(prefix + "SW1:" + sw1 + "  SW2:" + sw1, TextColor.RED));
+    }
 
     public static void printSuccess(String string) {
         System.out.println(colorString(string, TextColor.GREEN));
