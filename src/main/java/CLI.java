@@ -4,7 +4,6 @@ import actions.TerminalActions;
 import applet.Applet;
 
 import java.io.IOException;
-import java.util.UUID;
 
 public class CLI {
 
@@ -25,11 +24,11 @@ public class CLI {
     }
 
     public static void main(String[] args) throws IOException {
-//        Applet.openApplet();
-//        Applet.powerUp();
-//        Applet.createWalletApplet();
-//        Applet.runCapWallet();
-//        Applet.selectWallet();
+        Applet.openApplet();
+        Applet.powerUp();
+        Applet.createWalletApplet();
+        Applet.runCapWallet();
+        Applet.selectWallet();
 
         afterExam();
         afterSession();

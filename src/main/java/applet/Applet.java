@@ -5,7 +5,9 @@ import com.sun.javacard.apduio.CadClientInterface;
 import com.sun.javacard.apduio.CadDevice;
 import com.sun.javacard.jpcsclite.APDU;
 import database.Queries;
+import model.Course;
 import model.Examination;
+import model.Student;
 import utilities.HexUtilities;
 import utilities.LoggingUtilities;
 
@@ -13,10 +15,7 @@ import java.io.*;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Applet {
@@ -150,14 +149,16 @@ public class Applet {
 
     private static Examination getGrade(int courseId) {
         //0x80 0x30 0x00 0x00 0x01 0x01 0x7F;
-        String sb = "0x80 0x30 0x00 0x00 0x01 " + Integer.toHexString(courseId) + " 0X7F";
+        String sb = "0x80 0x30 0x00 0x00 0x01 " + "0x0" + Integer.toHexString(courseId) + " 0x7F";
 
         byte[] bytes = HexUtilities.getByteArrayFromList(HexUtilities.convertStringToByteList(sb));
         LoggingUtilities.printApduMessage("GET GRADE", sb);
 //        byte[] returnedBytes = sendApdu(bytes);
         //APDU|CLA: 80, INS: 30, P1: 00, P2: 00, Lc: 01, 01, Le: 04, 00, 0e, 07, 16, SW1: 90, SW2: 00
         //TODO transform response
-        return new Examination();
+        if (courseId != 2)
+            return null;
+        return new Examination(new Student(2), new Course(2, UUID.randomUUID(), "SCA"), 5);
     }
 
     public static void sendGrade(Integer grade, int courseId, Date date) {
@@ -196,14 +197,16 @@ public class Applet {
         var courses = Queries.getAllCourses();
         for (var course : courses) {
             int courseId = course.getId();
-            cardExaminations.add(getGrade(courseId));
+            var examination = getGrade(courseId);
+            if (examination != null)
+                cardExaminations.add(examination);
         }
         return cardExaminations;
     }
 
     public static void sendGradesToCard(List<Examination> newGrades) {
-        for (var examination : newGrades) {
+        for (var examination : newGrades)
             sendGrade(examination.getGrade(), examination.getCourse().getId(), examination.getDate());
-        }
+
     }
 }
